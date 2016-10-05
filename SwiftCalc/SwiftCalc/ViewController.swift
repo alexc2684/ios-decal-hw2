@@ -21,8 +21,10 @@ class ViewController: UIViewController {
     
     // TODO: This looks like a good place to add some data structures.
     //       One data structure is initialized below for reference.
-    var someDataStructure: [String] = [""]
-    
+    var operations: [String] = []
+
+    var currNum: Int = 0
+    var usedOperator: Bool = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,7 +37,6 @@ class ViewController: UIViewController {
         //            We will be using the result label to run autograded tests.
         resultLabel.accessibilityValue = "resultLabel"
         makeButtons()
-        // Do any additional setup here.
     }
     
     override func didReceiveMemoryWarning() {
@@ -45,14 +46,17 @@ class ViewController: UIViewController {
     
     // TODO: A method to update your data structure(s) would be nice.
     //       Modify this one or create your own.
-    func updateSomeDataStructure(_ content: String) {
-        print("Update me like one of those PCs")
+    func updateOperations(_ content: String) {
+        operations.append(content)
+        print(operations)
     }
     
     // TODO: Ensure that resultLabel gets updated.
     //       Modify this one or create your own.
     func updateResultLabel(_ content: String) {
-        print("Update me like one of those PCs")
+        print("Result Label updated")
+        resultLabel.text = content
+        //updateOperations(content) only when operation is pressed,
     }
     
     
@@ -65,8 +69,18 @@ class ViewController: UIViewController {
     // TODO: A simple calculate method for integers.
     //       Modify this one or create your own.
     func intCalculate(a: Int, b:Int, operation: String) -> Int {
-        print("Calculation requested for \(a) \(operation) \(b)")
-        return 0
+        var res : Int = 0
+        if operation == "+" {
+            res = a + b
+            return res
+        } else if operation == "-" {
+            res = a - b
+        } else if operation == "*" {
+            res = a * b
+        } else if operation == "/" {
+            res = a / b
+        }
+        return res
     }
     
     // TODO: A general calculate method for doubles
@@ -80,12 +94,56 @@ class ViewController: UIViewController {
     func numberPressed(_ sender: CustomButton) {
         guard Int(sender.content) != nil else { return }
         print("The number \(sender.content) was pressed")
-        // Fill me in!
+        let val = sender.content
+        if (String(currNum)).characters.count < 7 {
+            if operations.count == 1 {
+                operations.removeAll()
+            }
+            let num: Int = (val as NSString).integerValue
+            currNum = currNum*10 + num
+            print(currNum)
+            updateResultLabel(String(currNum))
+        }
     }
+    
     
     // REQUIRED: The responder to an operator button being pressed.
     func operatorPressed(_ sender: CustomButton) {
-        // Fill me in!
+        let button = sender.content
+        
+        if button == "C" {
+            currNum = 0
+            updateResultLabel(String(currNum))
+            operations.removeAll()
+        } else if button == "+/-" {
+            currNum = -currNum
+            updateResultLabel(String(currNum))
+        } else { //operator
+            if operations.count != 1 { //result is already first element
+                updateOperations(String(currNum)) //place latest num into the operations
+            }
+            if operations.count == 2 { //operator was last add
+                operations[1] = button
+            }
+            if operations.count == 3 {
+                let num1 : Int = (operations[0] as NSString).integerValue
+                let op = operations[1]
+                let num2 : Int = (operations[2] as NSString).integerValue
+                operations.removeAll() //clear
+                let result : Int = intCalculate(a: num1, b: num2, operation: op)
+                updateResultLabel(String(result))
+                updateOperations(String(result))
+            }
+            if button != "=" {
+                updateOperations(button)
+            }
+            currNum = 0
+
+        }
+
+
+        //updateResultLabel(sender.content)
+        
     }
     
     // REQUIRED: The responder to a number or operator button being pressed.
